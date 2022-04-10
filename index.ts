@@ -8,14 +8,28 @@ server.on('request', (request, response) => {
   const {method, url: path, headers} = request;
   const {pathname, search} = new URL(path, 'http://localhost:8888/');
 
-  //response.setHeader('Content-Type', 'text/html;charset=utf-8');
-  //pathname: /index.html
-  fs.readFile(p.resolve(publicDir, pathname.substring(1)), (error, data) => {
+  let filename = pathname.substring(1);
+  if (filename === '') {
+    filename = 'index.html';
+  }
+  fs.readFile(p.resolve(publicDir, filename), (error, data) => {
+
     if (error) {
-      response.statusCode = 404;
-      response.end();
+      console.log(error);
+      if (error.errno === -4058) {
+        response.statusCode = 404;
+        fs.readFile(p.resolve(publicDir, '404.html'), (error, data) => {
+          response.end(data);
+        });
+      } else if (error.errno === -4068) {
+        response.statusCode = 403;
+        response.end('Do not authorized to view file contents');
+      }else{
+        response.statusCode = 500
+        response.end('服务器繁忙，请稍后再试')
+      }
     } else {
-      response.end(data.toString());
+      response.end(data);
     }
   });
 });
