@@ -4,6 +4,7 @@ import * as fs from 'fs';
 
 const server = http.createServer();
 const publicDir = p.resolve(__dirname, 'public');  // __dirname 表示当前文件所在目录
+let cacheTime = 3600 * 24 * 365
 server.on('request', (request, response) => {
   const {method, url: path, headers} = request;
   const {pathname, search} = new URL(path, 'http://localhost:8888/');
@@ -34,6 +35,7 @@ server.on('request', (request, response) => {
         response.end('服务器繁忙，请稍后再试');
       }
     } else {
+      response.setHeader('Cache-Control', `public,max-age=${cacheTime}`)
       response.end(data);
     }
   });
